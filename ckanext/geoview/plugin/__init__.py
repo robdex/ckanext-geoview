@@ -5,11 +5,11 @@ import logging
 import mimetypes
 from six.moves.urllib.parse import urlparse
 
+import ckantoolkit as toolkit
 
 from ckan import plugins as p
 from ckan.common import json
 from ckan.lib.datapreview import on_same_domain
-from ckan.plugins import toolkit
 
 import ckanext.geoview.utils as utils
 
@@ -113,6 +113,9 @@ class OLGeoView(GeoViewMixin, GeoViewBase):
         else:
             view_formats = self.GEOVIEW_FORMATS
 
+        if ('arcgis_rest' in view_formats) or ('esri rest' in view_formats):
+            view_formats.append('arcgis geoservices rest api')
+
         correct_format = format_lower in view_formats
         can_preview_from_domain = self.proxy_enabled or same_domain
 
@@ -149,8 +152,12 @@ class OLGeoView(GeoViewMixin, GeoViewBase):
             ] = self._guess_format_from_extension(data_dict["resource"]["url"])
 
         if self.proxy_enabled and not same_domain:
-            proxy_url = proxy.get_proxified_resource_url(data_dict)
-            proxy_service_url = utils.get_proxified_service_url(data_dict)
+            if 'kml.zip' in data_dict['resource']['url']:
+                proxy_url = proxy.get_proxified_service_url(data_dict)
+                proxy_service_url = utils.get_proxified_service_url(data_dict)
+            else:
+                proxy_url = proxy.get_proxified_resource_url(data_dict)
+                proxy_service_url = utils.get_proxified_service_url(data_dict)
         else:
             proxy_url = data_dict["resource"]["url"]
             proxy_service_url = data_dict["resource"]["url"]
@@ -272,7 +279,7 @@ class WMTSView(GeoViewBase):
 class SHPView(GeoViewBase):
     p.implements(p.ITemplateHelpers, inherit=True)
 
-    SHP = ["shp", "shapefile"]
+    SHP = ['shp', 'shapefile', 'shp / zip', 'shp/zip', 'shp/zip']
 
     # IResourceView
     def info(self):
@@ -286,7 +293,7 @@ class SHPView(GeoViewBase):
 
     def can_view(self, data_dict):
         resource = data_dict["resource"]
-        format_lower = resource.get("format", "").lower()
+        format_lower = resource["format"].lower()
         name_lower = resource.get("name", "").lower()
         same_domain = on_same_domain(data_dict)
 

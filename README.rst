@@ -10,7 +10,7 @@ used to be part of ckanext-spatial_.
 **Note:** This is a work in progress, if you can help with `OpenLayers`_ or `Leaflet`_ development,
 check the `Issues` section for what needs to be done or add a new issue.
 
-This extensions supports CKAN 2.7 onwards, including Python 3 support on CKAN 2.9 or higher.
+This extensions supports CKAN 2.6 onwards, including Python 3 support on CKAN 2.9 or higher.
 
 ------------
 Installation
@@ -76,11 +76,11 @@ OpenLayers Viewer
 
 The OpenLayers_ viewer provides access to different geospatial formats and services:
 
-To enable it, add ``geo_view`` to your ``ckan.plugins`` setting.::
+To enable it, add ``geo_view`` to your ``ckan.plugins`` setting. (use ``geo_preview`` if you are using CKAN < 2.3)::
 
     ckan.plugins = ... resource_proxy geo_view
 
-If you want the geospatial views to be created by default, add the plugin to the following setting::
+On CKAN >= 2.3, if you want the geospatial views to be created by default, add the plugin to the following setting::
 
 
     ckan.views.default_views = ... geo_view
@@ -247,11 +247,11 @@ Leaflet GeoJSON Viewer
 
 The Leaflet_ GeoJSON_ viewer will render GeoJSON files on a map and add a popup showing the features properties, for those resources that have a ``geojson`` format.
 
-To enable it, add ``geojson_view`` to your ``ckan.plugins`` setting.::
+To enable it, add ``geojson_view`` to your ``ckan.plugins`` setting. (use ``geojson_preview`` if you are using CKAN < 2.3)::
 
     ckan.plugins = ... resource_proxy geojson_view
 
-If you want the views to be created by default on all GeoJSON files, add the plugin to the following setting::
+On CKAN >= 2.3, if you want the views to be created by default on all GeoJSON files, add the plugin to the following setting::
 
 
     ckan.views.default_views = ... geojson_view
@@ -269,11 +269,11 @@ Leaflet WMTS Viewer
 
 The Leaflet_ WMTS viewer will render WMTS (Web Map Tile Service) layers on a map for those resources that have a ``wmts`` format.
 
-To enable it, add ``wmts_view`` to your ``ckan.plugins`` setting.::
+To enable it, add ``wmts_view`` to your ``ckan.plugins`` setting. (use ``wmts_preview`` if you are using CKAN < 2.3)::
 
     ckan.plugins = ... resource_proxy wmts_view
 
-If you want the views to be created by default on all WMTS resources, add the plugin to the following setting::
+On CKAN >= 2.3, if you want the views to be created by default on all WMTS resources, add the plugin to the following setting::
 
 
     ckan.views.default_views = ... wmts_view
@@ -286,11 +286,11 @@ Leaflet ESRI Shapefile Viewer
 
 The Leaflet_ Shapefile_ viewer will render ESRI Shapfiles (A ZIP archive contains the .shp, .shx, .dbf, and .prj files) on a map and add a popup showing the features properties, for those resources that have a ``shp`` format.
 
-To enable it, add ``shp_view`` to your ``ckan.plugins`` setting.::
+To enable it, add ``shp_view`` to your ``ckan.plugins`` setting. (use ``shp_preview`` if you are using CKAN < 2.3)::
 
     ckan.plugins = ... resource_proxy shp_view
 
-If you want the views to be created by default on all Shapefiles, add the plugin to the following setting::
+On CKAN >= 2.3, if you want the views to be created by default on all Shapefiles, add the plugin to the following setting::
 
 
     ckan.views.default_views = ... shp_view
@@ -310,7 +310,7 @@ Common base layers for Map Widgets
 
 The geospatial view plugins support the same base map configurations than the ckanext-spatial `widgets`_.
 
-Check the following page to learn how to choose a different base map layer:
+Check the following page to learn how to choose a different base map layer (Stamen, MapBox or custom):
 
 http://docs.ckan.org/projects/ckanext-spatial/en/latest/map-widgets.html
 
@@ -319,27 +319,9 @@ http://docs.ckan.org/projects/ckanext-spatial/en/latest/map-widgets.html
 
 .. _widgets: http://docs.ckan.org/projects/ckanext-spatial/en/latest/spatial-search.html#spatial-search-widget
 
-> [!WARNING]  
-> As of July 2024 the common map configuration is not working with the OpenLayers viewer. Pull requests are welcome to address the issue
-
--------------------------
-Updating the JS libraries
--------------------------
-
-To update a JS library to a new version:
-
-1. Update the version number in ``package.json``
-2. Run ``npm install``
-3. Run ``npm run update-libs``
-
-The following libraries are managed manually as they don't have npm packages:
-
-* ol-helpers
-* shp2geojson
-
 
 -----------------------------------
-Registering ckanext-geoview on pypi
+Registering ckanext-geoview on PyPI
 -----------------------------------
 
 ckanext-geoview should be availabe on PyPI as

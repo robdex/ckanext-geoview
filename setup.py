@@ -1,17 +1,16 @@
 from setuptools import setup, find_packages
 
-version = '0.2.2'
+version = '0.0.19'
 
 setup(
     name='ckanext-geoview',
     version=version,
-    description='Geospatial viewers for CKAN resources',
-    long_description='This extension contains view plugins to display geospatial files and services in CKAN.',
-    long_description_content_type='text/plain',
+    description='CKAN Geospatial ResourceView',
+    long_description=''' ''',
     classifiers=[],
     keywords='',
-    author='Philippe Duchesne, Adrià Mercader and contributors',
-    author_email='tech-team@ckan.org',
+    author='Philippe Duchesne',
+    author_email='pduchesne@gmail.com',
     url='http://github.com/ckan/ckanext-geoview',
     license='MIT',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
@@ -19,7 +18,8 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        # -*- Extra requirements: -*-
+        'ckantoolkit',
+        'requests<3.0',
     ],
     entry_points='''
     [ckan.plugins]

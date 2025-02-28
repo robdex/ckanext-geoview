@@ -1,4 +1,4 @@
-.badge[data-format=wfs] {
+.label[data-format=wfs] {
     background-color: #7aae3d;
 }
 .format-label[data-format=wfs],
@@ -11,7 +11,7 @@
     height: 35px;
 }
 
-.badge[data-format=wms] {
+.label[data-format=wms] {
     background-color: #adc717;
 }
 .format-label[data-format=wms],
@@ -24,7 +24,7 @@
     height: 35px;
 }
 
-.badge[data-format=gml] {
+.label[data-format=gml] {
     background-color: #7aae3d;
 }
 .format-label[data-format=gml],
@@ -37,7 +37,7 @@
     height: 35px;
 }
 
-.badge[data-format=kml] {
+.label[data-format=kml] {
     background-color: #7aae3d;
 }
 .format-label[data-format=kml],
@@ -50,7 +50,7 @@
     height: 35px;
 }
 
-.badge[data-format=geojson] {
+.label[data-format=geojson] {
     background-color: #9855e0;
 }
 .format-label[data-format=geojson],
@@ -63,7 +63,7 @@
     height: 35px;
 }
 
-.badge[data-format=wmts] {
+.label[data-format=wmts] {
     background-color: #3333ff;
 }
 .format-label[data-format=wmts],
@@ -76,7 +76,7 @@
     height: 35px;
 }
 
-.badge[data-format=shp] {
+.label[data-format=shp] {
     background-color: #0080ff;
 }
 .format-label[data-format=shp],
@@ -89,6 +89,6 @@
     height: 35px;
 }
 
-.badge[data-format=arcgis_rest] {
+.label[data-format=arcgis_rest] {
     background-color: #5c3ee0;
 }

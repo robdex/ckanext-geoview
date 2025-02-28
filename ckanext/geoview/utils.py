@@ -6,16 +6,27 @@ from six.moves.urllib.parse import urlencode, urlsplit, parse_qs
 
 import requests
 
+import ckan.lib.base as base
+import ckan.lib.helpers as h
+import ckan.logic as logic
+
+import ckantoolkit as toolkit
+
 from ckan import plugins as p
-from ckan.plugins import toolkit
+
+from ckan.plugins.toolkit import asint, config
+
+import zipfile
+from io import StringIO
 
 log = logging.getLogger(__name__)
 
 GEOJSON_MAX_FILE_SIZE = 25 * 1024 * 1024
 
 
-MAX_FILE_SIZE = 3 * 1024 * 1024  # 1MB
-CHUNK_SIZE = 512
+MAX_FILE_SIZE = asint(config.get('ckan.resource_proxy.max_file_size', 1024**2))
+CHUNK_SIZE = asint(config.get('ckan.resource_proxy.chunk_size', 4096))
+TIMEOUT = asint(config.get(u'ckan.resource_proxy.timeout', 10))
 
 # HTTP request parameters that may conflict with OGC services
 # protocols and should be excluded from proxied calls
@@ -40,16 +51,26 @@ def proxy_service_resource(request, context, data_dict):
     than the maximum file size. """
     resource_id = data_dict["resource_id"]
     log.info("Proxify resource {id}".format(id=resource_id))
-    resource = toolkit.get_action("resource_show")(context, {"id": resource_id})
-    url = resource["url"]
-    return proxy_service_url(request, url)
+    resource = logic.get_action("resource_show")(context, {"id": resource_id})
+    res_format = resource['format'].lower()
+
+    unzip = False
+
+    if 'wms' in res_format or 'wfs' in res_format:
+        url = resource['url'].split('?')[0]
+    elif 'kml' in res_format and '.kml.zip' in resource['url']:
+        url = resource['url']
+        unzip = True
+    else:
+        url = resource['url']
+    return proxy_service_url(request, url, unzip=unzip)
 
 
-def proxy_service_url(req, url):
+def proxy_service_url(req, url, unzip=False):
 
     parts = urlsplit(url)
     if not parts.scheme or not parts.netloc:
-        toolkit.abort(409, detail="Invalid URL.")
+        base.abort(409, detail="Invalid URL.")
 
     try:
         method = req.environ["REQUEST_METHOD"]
@@ -57,7 +78,7 @@ def proxy_service_url(req, url):
         params = parse_qs(parts.query)
 
         if not p.toolkit.asbool(
-            toolkit.config.get(
+            base.config.get(
                 "ckanext.geoview.forward_ogc_request_params", "False"
             )
         ):
@@ -73,19 +94,19 @@ def proxy_service_url(req, url):
             length = int(req.environ["CONTENT_LENGTH"])
             headers = {"Content-Type": req.environ["CONTENT_TYPE"]}
             body = req.body
-            r = requests.post(url, data=body, headers=headers, stream=True)
+            r = requests.post(url, data=body, headers=headers, stream=True, timeout=TIMEOUT)
         else:
-            r = requests.get(url, params=req.query_string, stream=True)
+            r = requests.get(url, params=req.query_string, stream=True, timeout=TIMEOUT)
 
         # log.info('Request: {req}'.format(req=r.request.url))
         # log.info('Request Headers: {h}'.format(h=r.request.headers))
 
         cl = r.headers.get("content-length")
         if cl and int(cl) > MAX_FILE_SIZE:
-            toolkit.abort(
-                409,
+            base.abort(
+                413,
                 (
-                    """Content is too large to be proxied. Allowed
+                    """Dataset is too large to be previewed. Allowed
                 file size: {allowed}, Content-Length: {actual}. Url: """
                     + url
                 ).format(allowed=MAX_FILE_SIZE, actual=cl),
@@ -95,45 +116,52 @@ def proxy_service_url(req, url):
 
             response = make_response()
         else:
-            response = toolkit.response
+            response = base.response
 
-        response.content_type = r.headers["content-type"]
-        response.charset = r.encoding
+        if unzip:
+            response.content_type = 'application/xml'
+            response.charset = 'utf-8'
 
-        length = 0
-        for chunk in r.iter_content(chunk_size=CHUNK_SIZE):
-            if toolkit.check_ckan_version("2.9"):
-                response.data += chunk
-            else:
-                response.body_file.write(chunk)
-            length += len(chunk)
+            z = zipfile.ZipFile(StringIO.StringIO(r.content))
+            response.body_file.write(z.read(z.namelist()[0]))
+        else:
+            response.content_type = r.headers["content-type"]
+            response.charset = r.encoding
 
-            if length >= MAX_FILE_SIZE:
-                toolkit.abort(
-                    409,
-                    (
-                        """Content is too large to be proxied. Allowed
-                file size: {allowed}, Content-Length: {actual}. Url: """
-                        + url
-                    ).format(allowed=MAX_FILE_SIZE, actual=length),
-                )
+            length = 0
+            for chunk in r.iter_content(chunk_size=CHUNK_SIZE):
+                if toolkit.check_ckan_version("2.9"):
+                    response.data += chunk
+                else:
+                    response.body_file.write(chunk)
+                length += len(chunk)
+
+                if length >= MAX_FILE_SIZE:
+                    base.abort(
+                        413,
+                        (
+                            """Dataset is too large to be previewed. Allowed
+                    file size: {allowed}, Content-Length: {actual}. Url: """
+                            + url
+                        ).format(allowed=MAX_FILE_SIZE, actual=length),
+                    )
 
     except requests.exceptions.HTTPError as error:
         details = "Could not proxy resource. Server responded with %s %s" % (
             error.response.status_code,
             error.response.reason,
         )
-        toolkit.abort(409, detail=details)
+        base.abort(409, detail=details)
     except requests.exceptions.ConnectionError as error:
         details = (
             """Could not proxy resource because a
                             connection error occurred. %s"""
             % error
         )
-        toolkit.abort(502, detail=details)
+        base.abort(502, detail=details)
     except requests.exceptions.Timeout as error:
         details = "Could not proxy resource because the connection timed out."
-        toolkit.abort(504, detail=details)
+        base.abort(504, detail=details)
     return response
 
 
@@ -207,7 +235,7 @@ def get_proxified_service_url(data_dict):
     :param data_dict: contains a resource and package dict
     :type data_dict: dictionary
     """
-    url = toolkit.url_for(
+    url = h.url_for(
         action="proxy_service",
         controller='service_proxy',
         id=data_dict["package"]["name"],
