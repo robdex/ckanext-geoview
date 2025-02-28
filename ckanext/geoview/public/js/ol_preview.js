@@ -5,7 +5,8 @@
     if (window.Proj4js) {
         // add your projection definitions here
         // definitions can be found at http://spatialreference.org/ref/epsg/{xxxx}/proj4js/
-
+        proj4.defs("EPSG:3003", "+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs +type=crs");
+        proj4.defs("EPSG:3004", "+proj=tmerc +lat_0=0 +lon_0=15 +k=0.9996 +x_0=2520000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs +type=crs");
     }
 
     var $_ = _ // keep pointer to underscore, as '_' will may be overridden by a closure variable when down the stack
