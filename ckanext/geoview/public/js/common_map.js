@@ -71,6 +71,11 @@
           if (mapConfig.subdomains) leafletBaseLayerOptions.subdomains = mapConfig.subdomains;
           if (mapConfig.tms) leafletBaseLayerOptions.tms = mapConfig.tms;
           leafletBaseLayerOptions.attribution = mapConfig.attribution;
+      } else if (mapConfig.type == 'OpenStreetMap') {
+            // Default to Stamen base map
+            baseLayerUrl = 'http://tile.openstreetmap.org/{z}/{x}/{y}.png';
+            leafletBaseLayerOptions.subdomains = mapConfig.subdomains || 'abcd';
+            leafletBaseLayerOptions.attribution = mapConfig.attribution || 'Map tiles & Data by OpenStreetMap, under CC BY SA.';
       } else {
           // Default to Stamen base map
           baseLayerUrl = 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png';
