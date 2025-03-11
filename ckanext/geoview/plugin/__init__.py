@@ -293,8 +293,11 @@ class SHPView(GeoViewBase):
 
     def can_view(self, data_dict):
         resource = data_dict["resource"]
-        format_lower = resource.get("format", "").lower() if resource.get("format") else ""
-        name_lower = resource.get("name", "").lower() if resource.get("name") else ""
+        if resource.get("name", "") is None:
+            name_lower = ""
+        else:
+            name_lower = resource.get("name", "").lower()
+        format_lower = resource["format"].lower()
         same_domain = on_same_domain(data_dict)
 
         if format_lower in self.SHP or any([shp in name_lower for shp in self.SHP]):
